@@ -7,7 +7,10 @@ const cors = require('cors');
 
 const app = express();
 app.use(cors());
-const { PORT } = process.env;
+
+// Render asigna PORT automáticamente.
+const PORT = process.env.PORT || 3000;
+
 /**
  * #################
  * ## Middlewares ##
@@ -19,7 +22,7 @@ const canAddProfile = require('./middlewares/canAddProfile');
 const canEdit = require('./middlewares/canEdit');
 const profileExists = require('./middlewares/profileExists');
 
-//CONTROLADORES DE PERFIL DE JUGADORES
+// CONTROLADORES DE PERFIL DE JUGADORES
 const {
   newProfile,
   addProfilePhoto,
@@ -35,7 +38,7 @@ const {
   sendContract,
 } = require('./controllers/profiles');
 
-//CONTROLADORES DE USUARIOS
+// CONTROLADORES DE USUARIOS
 const {
   newUser,
   loginUser,
@@ -48,34 +51,35 @@ const {
   editUser,
 } = require('./controllers/users');
 
-//Logger
+// Logger
 app.use(morgan('dev'));
-// Deserializamos el body de tipo "raw".
+
+// Deserializamos JSON.
 app.use(express.json());
 
-// Deserializamos el body de tipo "form-data".
+// Deserializamos form-data.
 app.use(fileUpload());
 
 // Mostrar archivos estáticos
 app.use('/fotos', express.static('static/uploads'));
 
 /*############################
-//ENDPOINTS PERFILES JUGADORES
-##############################
-*/
-//Crea un nuevo perfil
+ENDPOINTS PERFILES JUGADORES
+############################*/
+
+// Crea un nuevo perfil
 app.post('/new-profile', authUser, canAddProfile, newProfile);
 
-//Lista los perfiles
+// Lista los perfiles
 app.get('/profiles', listProfiles);
 
-//Selecionar un perfil con su info completa
+// Seleccionar un perfil con su info completa
 app.get('/profiles/:idProfile', authUser, profileExists, getProfile);
 
-//Editar un perfil
+// Editar un perfil
 app.put('/profiles/:idProfile', authUser, profileExists, canEdit, editProfile);
 
-//Borrar un perfil de jugador
+// Borrar un perfil
 app.delete(
   '/profiles/:idProfile',
   authUser,
@@ -84,7 +88,7 @@ app.delete(
   deleteProfile
 );
 
-//Adicionar skill
+// Adicionar skill
 app.post(
   '/profiles/:idProfile/skills',
   authUser,
@@ -93,7 +97,7 @@ app.post(
   addSkill
 );
 
-//Eliminar una skill
+// Eliminar una skill
 app.delete(
   '/profiles/:idProfile/skills/:idSkill',
   authUser,
@@ -102,7 +106,7 @@ app.delete(
   deleteSkills
 );
 
-//Adicionar fotos al perfil
+// Adicionar fotos
 app.post(
   '/profiles/:idProfile/photos',
   authUser,
@@ -111,7 +115,7 @@ app.post(
   addProfilePhoto
 );
 
-// Eliminar una foto del perfil.
+// Eliminar foto
 app.delete(
   '/profiles/:idProfile/photos/:idPhoto',
   authUser,
@@ -119,7 +123,8 @@ app.delete(
   canEdit,
   deletePhoto
 );
-//Adicionar videos al perfil
+
+// Adicionar vídeos
 app.post(
   '/profiles/:idProfile/videos',
   authUser,
@@ -128,7 +133,7 @@ app.post(
   addVideos
 );
 
-//Elimina videos del perfil
+// Eliminar vídeos
 app.delete(
   '/profiles/:idProfile/videos/:idVideo',
   authUser,
@@ -137,7 +142,7 @@ app.delete(
   deleteVideos
 );
 
-//Envia oferta de contratación de un jugador al usuario
+// Oferta de contratación
 app.post(
   '/profiles/:idProfile/contract',
   authUser,
@@ -146,35 +151,34 @@ app.post(
 );
 
 /*############################
-//ENDPOINTS USUARIOS
-##############################
-*/
+ENDPOINTS USUARIOS
+############################*/
 
-//Crear nuevo usuario
+// Crear usuario
 app.post('/register', newUser);
 
-// Login de usuario
+// Login
 app.post('/users', loginUser);
 
-// Validar usuario.
+// Validar usuario
 app.get('/users/validate/:registrationCode', validateUser);
 
-//Exibir el perfil de un Usuario
+// Obtener usuario
 app.get('/users/:idUser', authUser, userExists, getUser);
 
-//Edita un usuario
+// Editar usuario
 app.put('/user/:idUser', authUser, userExists, editUser);
 
-//Edita la contraseña del usuario
+// Editar contraseña
 app.put('/users/:idUser/password', authUser, userExists, editPass);
 
-//Enviar codigo de recuperacion de contraseña al usuario
+// Recuperar contraseña
 app.put('/users/password/recover', recoverPass);
 
-//Resetea la contraseña del usuario utilizando el codigo enviado
+// Resetear contraseña
 app.put('/users/password/reset', resetPass);
 
-//Elimina una cuenta de usuario
+// Eliminar usuario
 app.delete('/users/:idUser', authUser, userExists, deleteUser);
 
 /**
@@ -184,6 +188,7 @@ app.delete('/users/:idUser', authUser, userExists, deleteUser);
  */
 app.use((error, req, res, next) => {
   console.error(error);
+
   res.status(error.httpStatus || 500).send({
     status: 'error',
     message: error.message,
@@ -203,5 +208,5 @@ app.use((req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server listening at http://localhost:${PORT}`);
+  console.log(`Server listening on port ${PORT}`);
 });
